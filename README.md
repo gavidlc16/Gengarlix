@@ -29,17 +29,12 @@
 
 ## 📦 Instalación y Requisitos
 
-<details>
-<summary><b>📦 Dependencias requeridas</b> (clic para expandir)</summary>
-
 ### Dependencias del sistema (Kali Linux / Parrot OS)
 * **`python3`** (versión 3.10 o superior)
 * **`scapy`** (captura y análisis de paquetes)
 * **`aircrack-ng`** (gestión de interfaces y crackeo)
 * **`hcxtools`** y **`hashcat`** (para PMKID y crackeo avanzado)
 * **`iw`** y **`net-tools`** (control de tarjetas de red)
-
-</details>
 
 ### 📥 Instalación rápida
 
