@@ -46,9 +46,43 @@
 
 Clona el repositorio e instala las dependencias ejecutando:
 
-```bash
-git clone https://github.com/gavidlc16/Gengarlix.git
-cd Gengarlix
-sudo apt update
-sudo apt install aircrack-ng hcxtools hashcat iw net-tools -y
-pip3 install -r requirements.txt
+    git clone https://github.com/gavidlc16/Gengarlix.git
+    cd Gengarlix
+    sudo apt update
+    sudo apt install aircrack-ng hcxtools hashcat iw net-tools -y
+    pip3 install -r requirements.txt
+
+---
+
+## 💀 Uso Ofensivo (Pentesting Autorizado)
+
+| Flag | Descripción |
+|---|---|
+| `--monitor IFACE` | Activa modo monitor (ej. `--monitor wlan0`) |
+| `--scan` | Escaneo de redes 802.11 |
+| `--clients --bssid MAC` | Escaneo de clientes del AP |
+| `--deauth --bssid MAC` | Envío manual de tramas deauth |
+| `--capture --bssid MAC` | Captura de Handshake + deauth automático |
+| `--pmkid --bssid MAC` | Captura PMKID (Clientless) |
+| `--crack PCAP` | Crackeo de handshake (aircrack) |
+| `--pmkid-crack PCAP` | Crackeo de PMKID (hashcat) |
+| `--ai` | Análisis con IA local |
+
+### ⚡ Flujo rápido de trabajo
+
+    # 1. Activar modo monitor
+    sudo python3 gengarlix.py --monitor wlan0
+
+    # 2. Escanear redes
+    sudo python3 gengarlix.py -i wlan0mon --scan
+
+    # 3. Capturar handshake (automático con deauth)
+    sudo python3 gengarlix.py -i wlan0mon --bssid AA:BB:CC:DD:EE:FF --capture
+
+    # 4. Crackear
+    python3 gengarlix.py --crack reports/handshake_AABBCCDDEEFF.pcap
+
+---
+
+## 📄 Licencia
+Este proyecto está bajo la Licencia MIT.
