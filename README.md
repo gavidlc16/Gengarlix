@@ -29,15 +29,14 @@
 
 ## 📦 Instalación y Requisitos
 
-### Dependencias del sistema (Kali Linux / Parrot OS)
+### 1. Dependencias del sistema (Kali Linux / Parrot OS)
 * **`python3`** (versión 3.10 o superior)
 * **`scapy`** (captura y análisis de paquetes)
 * **`aircrack-ng`** (gestión de interfaces y crackeo)
 * **`hcxtools`** y **`hashcat`** (para PMKID y crackeo avanzado)
 * **`iw`** y **`net-tools`** (control de tarjetas de red)
 
-### 📥 Instalación rápida
-
+### 2. Instalación rápida
 Clona el repositorio e instala las dependencias ejecutando:
 
     git clone https://github.com/gavidlc16/Gengarlix.git
@@ -45,6 +44,19 @@ Clona el repositorio e instala las dependencias ejecutando:
     sudo apt update
     sudo apt install aircrack-ng hcxtools hashcat iw net-tools -y
     pip3 install -r requirements.txt
+
+### 3. Instalación de Ollama (Opcional, para Análisis IA)
+Si deseas usar la función `--ai` para analizar los resultados automáticamente, necesitas tener **Ollama** instalado. Es un software 100% gratuito y open-source que ejecuta modelos de IA locales en tu propia computadora.
+
+Instálalo en Kali Linux con el siguiente comando:
+
+    curl -fsSL https://ollama.com/install.sh | sh
+
+Luego, descarga un modelo de lenguaje (recomendamos `llama3` por su equilibrio entre rendimiento y velocidad):
+
+    ollama pull llama3
+    
+*(Nota: El análisis con IA se ejecutará de forma local sin enviar datos a la nube, lo cual es ideal para la privacidad en auditorías).*
 
 ---
 
@@ -90,7 +102,7 @@ Una vez capturado el archivo `.pcap`, usa el ataque de diccionario con tu propia
     python3 gengarlix.py --pmkid-crack reports/pmkid_AABBCCDDEEFF.pcap --wordlist wordlists/gengar_passwords_mangled.txt
 
 ### 5. Análisis con IA y Reportes
-Genera un reporte final en Markdown con los hallazgos. Si tienes [Ollama](https://ollama.com/) corriendo localmente, la IA resumirá los resultados de seguridad.
+Genera un reporte final en Markdown con los hallazgos. Asegúrate de tener Ollama corriendo (`ollama serve`).
 
     # Escanear y analizar con IA (guardando reporte)
     sudo python3 gengarlix.py -i wlan0mon --scan --ai --report reports/auditoria_final.md
