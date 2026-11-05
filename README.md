@@ -1,5 +1,5 @@
 <div align="center">
-  <h1>👻 Gengarlix</h1>
+  <h1>👻 Gengarlix</h1> 👻
   <img src="docs/screenshots/banner.png" alt="Banner de Gengarlix" width="800">
   <p><b>Suite de auditoría Wi-Fi pasiva con análisis local por IA</b></p>
   <p>
