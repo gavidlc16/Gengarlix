@@ -14,7 +14,7 @@
 ## 🚀 Instalación y Requisitos
 
 <details>
-<summary><b>📦 Dependencias requeridas</b> (clic para expandir)</summary>
+<summary><b>📦 Dependencias requeridas</b> </summary>
 
 ### Dependencias del sistema
 * **`python3`** (versión 3.10 o superior)[cite: 5]
@@ -27,7 +27,7 @@
 </details>
 
 <details>
-<summary><b>🧩 Extensiones y herramientas opcionales</b> (clic para expandir)</summary>
+<summary><b>🧩 Extensiones y herramientas opcionales</b> </summary>
 
 * **`ollama`** *(Opcional)*: Requerido si deseas utilizar el análisis local por Inteligencia Artificial para explicar los hallazgos del escaneo.
 * **`macchanger`** *(Opcional)*: Útil para la suplantación de direcciones MAC durante las auditorías.
