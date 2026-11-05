@@ -12,12 +12,10 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 PURPLE, BOLD = "\033[35m", "\033[1m"
 CYAN, RED, GREEN, YELLOW, RESET = "\033[36m", "\033[31m", "\033[32m", "\033[33m", "\033[0m"
 
-# ─── Banner (Gengar con margen izquierdo y superior seguro) ───
+# ─── Banner (Gengar con solo 2 líneas de margen superior) ───
 gengar = [
-    "",  # Margen superior para evitar chocar con el comando de la terminal
-    "",
-    "   ",
-    "   ",
+    "",  # Margen superior 1
+    "",  # Margen superior 2
     "               =#*#+:",  
     "               =*=+==*=.",
     "               =*=%@%+-*#-,",
@@ -64,7 +62,7 @@ derecha = [
     r"    ██║   ██║██╔══╝  ██║╚██╗██║██║   ██║██╔══██║██╔══██╗",
     r"    ╚██████╔╝███████╗██║ ╚████║╚██████╔╝██║  ██║██║  ██║",
     r"     ╚═════╝ ╚══════╝╚═╝  ╚═══╝ ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝",
-    
+
     # LIX justo debajo
     r"    ██╗     ██╗██╗  ██╗",
     r"    ██║     ██║╚██╗██╔╝",
@@ -91,11 +89,14 @@ def imprimir_banner():
     except OSError:
         ancho_terminal = 80
 
+    # Calcular el ancho máximo del arte de Gengar para alinear el título sin que choque
+    max_gengar_len = max(len(line) for line in gengar)
+
     for i in range(max(len(gengar), len(derecha))):
         if ancho_terminal > 110:
             raw = gengar[i] if i < len(gengar) else ""
-            # Reducimos el pad a 55 para acercar el título al Gengar
-            pad = " " * max(0, 55 - len(raw))
+            # Se calcula el pad asegurando siempre al menos 5 espacios a la derecha del arte
+            pad = " " * max(0, max_gengar_len - len(raw) + 5)
             line_g = f"{PURPLE}{BOLD}{raw}{RESET}{pad}" if raw.strip() else pad
             line_d = f"{PURPLE}{BOLD}{derecha[i]}{RESET}" if i < len(derecha) and derecha[i] else ""
             print(f"{line_g}{line_d}")
