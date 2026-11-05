@@ -23,6 +23,7 @@
 - **Cracking:** Integración con `aircrack-ng` y `hashcat`.
 - **Análisis IA:** Consultas a Ollama local para resumir auditorías.
 - **Reportes:** Generación automática de reportes en Markdown.
+- **Wordlists:** Incluye un diccionario base y un script generador de contraseñas (mangling).
 
 ---
 
@@ -31,14 +32,12 @@
 <details>
 <summary><b>📦 Dependencias requeridas</b> (clic para expandir)</summary>
 
-### Dependencias del sistema
+### Dependencias del sistema (Kali Linux / Parrot OS)
 * **`python3`** (versión 3.10 o superior)
 * **`scapy`** (captura y análisis de paquetes)
-* **`aircrack-ng`** (gestión de interfaces inalámbricas)
-* **`hcxtools`** y **`hashcat`** (para PMKID y crackeo)
+* **`aircrack-ng`** (gestión de interfaces y crackeo)
+* **`hcxtools`** y **`hashcat`** (para PMKID y crackeo avanzado)
 * **`iw`** y **`net-tools`** (control de tarjetas de red)
-
-*Nota: Recomendado sobre sistemas operativos basados en Linux de ciberseguridad (Kali Linux / Parrot OS).*
 
 </details>
 
@@ -54,33 +53,62 @@ Clona el repositorio e instala las dependencias ejecutando:
 
 ---
 
-## 💀 Uso Ofensivo (Pentesting Autorizado)
+## 💀 Guía de Uso (Pentesting Autorizado en Linux)
 
-| Flag | Descripción |
-|---|---|
-| `--monitor IFACE` | Activa modo monitor (ej. `--monitor wlan0`) |
-| `--scan` | Escaneo de redes 802.11 |
-| `--clients --bssid MAC` | Escaneo de clientes del AP |
-| `--deauth --bssid MAC` | Envío manual de tramas deauth |
-| `--capture --bssid MAC` | Captura de Handshake + deauth automático |
-| `--pmkid --bssid MAC` | Captura PMKID (Clientless) |
-| `--crack PCAP` | Crackeo de handshake (aircrack) |
-| `--pmkid-crack PCAP` | Crackeo de PMKID (hashcat) |
-| `--ai` | Análisis con IA local |
+Todas las herramientas de captura e inyección de paquetes requieren permisos de superusuario (`sudo`). Asegúrate de tener tu adaptador Wi-Fi conectado y compatible con modo monitor.
 
-### ⚡ Flujo rápido de trabajo
+### 1. Gestión del Modo Monitor
+Para iniciar un pentest, primero debes poner tu tarjeta en modo monitor. Esto matará los procesos de red normales y creará una nueva interfaz (ej. `wlan0mon`).
 
-    # 1. Activar modo monitor
     sudo python3 gengarlix.py --monitor wlan0
 
-    # 2. Escanear redes
-    sudo python3 gengarlix.py -i wlan0mon --scan
+*(Nota: Reemplaza `wlan0` por el nombre real de tu interfaz. Para volver a la normalidad, puedes usar `sudo airmon-ng stop wlan0mon`).*
 
-    # 3. Capturar handshake (automático con deauth)
-    sudo python3 gengarlix.py -i wlan0mon --bssid AA:BB:CC:DD:EE:FF --capture
+### 2. Escaneo de Redes y Clientes
+Escanea el espectro para encontrar objetivos (redes Wi-Fi y dispositivos conectados).
 
-    # 4. Crackear
-    python3 gengarlix.py --crack reports/handshake_AABBCCDDEEFF.pcap
+    # Escanear redes disponibles (BSSID, SSID, Canal, Señal)
+    sudo python3 gengarlix.py -i wlan0mon --scan --timeout 30
+
+    # Ver clientes conectados a un AP específico
+    sudo python3 gengarlix.py -i wlan0mon --bssid AA:BB:CC:DD:EE:FF --clients
+
+### 3. Ataques de Inyección (Deauth y Captura)
+Fuerza la desconexión de los clientes para interceptar el saludo de autenticación (Handshake) o capturar el PMKID.
+
+    # Enviar tramas de desautenticación manuales (Ataque de fuerza bruta)
+    sudo python3 gengarlix.py -i wlan0mon --bssid AA:BB:CC:DD:EE:FF --deauth
+
+    # Capturar Handshake (incluye deauth automático para forzar reconexión)
+    sudo python3 gengarlix.py -i wlan0mon --bssid AA:BB:CC:DD:EE:FF --capture --timeout 120
+
+    # Ataque PMKID (No necesita clientes conectados, es "Clientless")
+    sudo python3 gengarlix.py -i wlan0mon --bssid AA:BB:CC:DD:EE:FF --pmkid --timeout 60
+
+### 4. Crackeo de Contraseñas
+Una vez capturado el archivo `.pcap`, usa el ataque de diccionario con tu propia lista de contraseñas.
+
+    # Crackear un Handshake capturado (usando aircrack-ng)
+    python3 gengarlix.py --crack reports/handshake_AABBCCDDEEFF.pcap --wordlist wordlists/gengar_passwords_mangled.txt
+
+    # Crackear un PMKID capturado (usando hashcat)
+    python3 gengarlix.py --pmkid-crack reports/pmkid_AABBCCDDEEFF.pcap --wordlist wordlists/gengar_passwords_mangled.txt
+
+### 5. Análisis con IA y Reportes
+Genera un reporte final en Markdown con los hallazgos. Si tienes [Ollama](https://ollama.com/) corriendo localmente, la IA resumirá los resultados de seguridad.
+
+    # Escanear y analizar con IA (guardando reporte)
+    sudo python3 gengarlix.py -i wlan0mon --scan --ai --report reports/auditoria_final.md
+
+---
+
+## 🔤 Generación de Diccionarios (Wordlists)
+El repositorio incluye un script llamado `mangler.py` que toma una lista de palabras base y la expande automáticamente con números, símbolos y mayúsculas (ej. `gengar` -> `Gengar2024!`).
+
+    # Para generar tu propio diccionario masivo:
+    python3 mangler.py
+
+*(El resultado se guardará en `wordlists/gengar_passwords_mangled.txt`)*
 
 ---
 
