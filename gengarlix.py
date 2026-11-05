@@ -12,7 +12,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 PURPLE, BOLD = "\033[35m", "\033[1m"
 CYAN, RED, GREEN, YELLOW, RESET = "\033[36m", "\033[31m", "\033[32m", "\033[33m", "\033[0m"
 
-# ─── Banner (Gengar con solo 2 líneas de margen superior) ───
+# ─── Banner (Gengar con exactamente 2 líneas de margen superior) ───
 gengar = [
     "",  # Margen superior 1
     "",  # Margen superior 2
@@ -51,7 +51,7 @@ gengar = [
     "                                 :#%#####+:",
 ]
 
-# Título ajustado con GENGAR y LIX juntos
+# Título ajustado con tu bloque exacto (GENGAR arriba, LIX abajo)
 derecha = [
     "", "", "", "", "", "", "", "", "", "", "",
 
@@ -89,18 +89,19 @@ def imprimir_banner():
     except OSError:
         ancho_terminal = 80
 
-    # Calcular el ancho máximo del arte de Gengar para alinear el título sin que choque
+    # Calculamos el ancho máximo del dibujo de la izquierda para que el título no se superponga
     max_gengar_len = max(len(line) for line in gengar)
 
     for i in range(max(len(gengar), len(derecha))):
         if ancho_terminal > 110:
             raw = gengar[i] if i < len(gengar) else ""
-            # Se calcula el pad asegurando siempre al menos 5 espacios a la derecha del arte
+            # El pad asegura siempre al menos 5 espacios entre el Gengar y el título
             pad = " " * max(0, max_gengar_len - len(raw) + 5)
             line_g = f"{PURPLE}{BOLD}{raw}{RESET}{pad}" if raw.strip() else pad
             line_d = f"{PURPLE}{BOLD}{derecha[i]}{RESET}" if i < len(derecha) and derecha[i] else ""
             print(f"{line_g}{line_d}")
         else:
+            # Fallback por si la terminal es muy angosta
             if i < len(gengar) and gengar[i].strip():
                 print(f"{PURPLE}{BOLD}{gengar[i]}{RESET}")
             else:
