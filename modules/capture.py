@@ -8,10 +8,6 @@ class HandshakeCapture:
         self.packets = []
         self.eapol_count = 0
 
-    def _set_channel(self, interface, channel):
-        subprocess.run(['iw', 'dev', interface, 'set', 'channel', str(channel)],
-                       capture_output=True)
-
     def _packet_handler(self, pkt):
         if pkt.haslayer(EAPOL) and (pkt[Dot11].addr3 == self.bssid or pkt[Dot11].addr1 == self.bssid):
             self.packets.append(pkt)
@@ -21,7 +17,6 @@ class HandshakeCapture:
     def capture(self, interface, timeout=60, deauth_every=5, output='handshake.pcap'):
         print(f"[*] Capturando handshake para {self.bssid} en {interface}...")
         try:
-            # Intentamos sniffar. Scapy usará el canal actual de la interfaz.
             sniff(iface=interface, prn=self._packet_handler, timeout=timeout, store=0,
                   stop_filter=lambda p: self.eapol_count >= 4)
         except Exception as e:
@@ -36,7 +31,6 @@ class HandshakeCapture:
         return None
 
 def capture_pmkid(interface, bssid, channel, timeout=60, output='pmkid.pcap'):
-    """Función para capturar PMKID (clientless)."""
     print(f"[*] Capturando PMKID para {bssid} en canal {channel}...")
     subprocess.run(['iw', 'dev', interface, 'set', 'channel', str(channel)], capture_output=True)
     
