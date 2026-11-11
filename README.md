@@ -16,7 +16,7 @@
 > **AVISO LEGAL:** Esta herramienta está diseñada exclusivamente para **auditorías éticas, laboratorios de práctica y entornos controlados**. El uso de estas funciones en redes sin autorización explícita es **ilegal**. El autor no se hace responsable del mal uso.
 
 ## 🚀 Características
-- **Modo Monitor:** Gestión de interfaces con `airmon-ng`.
+- **Modo Monitor:** Gestión de interfaces con `airmon-ng` e `iw`.
 - **Escaneo:** Detección de redes y clientes (Scapy).
 - **Ataques de Handshake:** Captura WPA/WPA2 forzando reconexión (Deauth).
 - **Ataque PMKID:** Captura *clientless* sin esperar a que un cliente se conecte.
@@ -36,16 +36,30 @@
 * **`hcxtools`** y **`hashcat`** (para PMKID y crackeo avanzado)
 * **`iw`** y **`net-tools`** (control de tarjetas de red)
 
-### 2. Instalación rápida
-Clona el repositorio e instala las dependencias ejecutando:
+### 2. Instalación Automática (Recomendada)
+Hemos creado un script de instalación que configura el entorno virtual (para no romper tu Kali) e instala las dependencias y el comando global.
+
+    git clone https://github.com/gavidlc16/Gengarlix.git
+    cd Gengarlix
+    chmod +x install.sh
+    sudo ./install.sh
+
+*Este script creará un comando global llamado `gengarlix` para que puedas usarlo desde cualquier carpeta.*
+
+### 3. Instalación Manual (Si prefieres hacerlo paso a paso)
+Si no quieres usar el script, puedes hacerlo manualmente:
 
     git clone https://github.com/gavidlc16/Gengarlix.git
     cd Gengarlix
     sudo apt update
-    sudo apt install aircrack-ng hcxtools hashcat iw net-tools -y
+    sudo apt install aircrack-ng hcxtools hashcat iw net-tools python3-venv -y
+    python3 -m venv venv
+    source venv/bin/activate
     pip3 install -r requirements.txt
 
-### 3. Instalación de Ollama (Opcional, para Análisis IA)
+*(Nota: Si instalas manualmente, tendrás que activar el entorno virtual con `source venv/bin/activate` cada vez que uses la herramienta).*
+
+### 4. Instalación de Ollama (Opcional, para Análisis IA)
 Si deseas usar la función `--ai` para analizar los resultados automáticamente, necesitas tener **Ollama** instalado. Es un software 100% gratuito y open-source que ejecuta modelos de IA locales en tu propia computadora.
 
 Instálalo en Kali Linux con el siguiente comando:
@@ -64,10 +78,13 @@ Luego, descarga un modelo de lenguaje (recomendamos `llama3` por su equilibrio e
 
 Todas las herramientas de captura e inyección de paquetes requieren permisos de superusuario (`sudo`). Asegúrate de tener tu adaptador Wi-Fi conectado y compatible con modo monitor.
 
+**Para ver el menú de ayuda en cualquier momento:**
+    sudo gengarlix --help
+
 ### 1. Gestión del Modo Monitor
 Para iniciar un pentest, primero debes poner tu tarjeta en modo monitor. Esto matará los procesos de red normales y creará una nueva interfaz (ej. `wlan0mon`).
 
-    sudo python3 gengarlix.py --monitor wlan0
+    sudo gengarlix --monitor wlan0
 
 *(Nota: Reemplaza `wlan0` por el nombre real de tu interfaz. Para volver a la normalidad, puedes usar `sudo airmon-ng stop wlan0mon`).*
 
@@ -75,37 +92,37 @@ Para iniciar un pentest, primero debes poner tu tarjeta en modo monitor. Esto ma
 Escanea el espectro para encontrar objetivos (redes Wi-Fi y dispositivos conectados).
 
     # Escanear redes disponibles (BSSID, SSID, Canal, Señal)
-    sudo python3 gengarlix.py -i wlan0mon --scan --timeout 30
+    sudo gengarlix -i wlan0mon --scan --timeout 30
 
     # Ver clientes conectados a un AP específico
-    sudo python3 gengarlix.py -i wlan0mon --bssid AA:BB:CC:DD:EE:FF --clients
+    sudo gengarlix -i wlan0mon --bssid AA:BB:CC:DD:EE:FF --clients
 
 ### 3. Ataques de Inyección (Deauth y Captura)
 Fuerza la desconexión de los clientes para interceptar el saludo de autenticación (Handshake) o capturar el PMKID.
 
     # Enviar tramas de desautenticación manuales (Ataque de fuerza bruta)
-    sudo python3 gengarlix.py -i wlan0mon --bssid AA:BB:CC:DD:EE:FF --deauth
+    sudo gengarlix -i wlan0mon --bssid AA:BB:CC:DD:EE:FF --deauth
 
     # Capturar Handshake (incluye deauth automático para forzar reconexión)
-    sudo python3 gengarlix.py -i wlan0mon --bssid AA:BB:CC:DD:EE:FF --capture --timeout 120
+    sudo gengarlix -i wlan0mon --bssid AA:BB:CC:DD:EE:FF --capture --timeout 120
 
     # Ataque PMKID (No necesita clientes conectados, es "Clientless")
-    sudo python3 gengarlix.py -i wlan0mon --bssid AA:BB:CC:DD:EE:FF --pmkid --timeout 60
+    sudo gengarlix -i wlan0mon --bssid AA:BB:CC:DD:EE:FF --pmkid --timeout 60
 
 ### 4. Crackeo de Contraseñas
 Una vez capturado el archivo `.pcap`, usa el ataque de diccionario con tu propia lista de contraseñas.
 
     # Crackear un Handshake capturado (usando aircrack-ng)
-    python3 gengarlix.py --crack reports/handshake_AABBCCDDEEFF.pcap --wordlist wordlists/gengar_passwords_mangled.txt
+    sudo gengarlix --crack reports/handshake_AABBCCDDEEFF.pcap --wordlist wordlists/gengar_passwords_mangled.txt
 
     # Crackear un PMKID capturado (usando hashcat)
-    python3 gengarlix.py --pmkid-crack reports/pmkid_AABBCCDDEEFF.pcap --wordlist wordlists/gengar_passwords_mangled.txt
+    sudo gengarlix --pmkid-crack reports/pmkid_AABBCCDDEEFF.pcap --wordlist wordlists/gengar_passwords_mangled.txt
 
 ### 5. Análisis con IA y Reportes
 Genera un reporte final en Markdown con los hallazgos. Asegúrate de tener Ollama corriendo (`ollama serve`).
 
     # Escanear y analizar con IA (guardando reporte)
-    sudo python3 gengarlix.py -i wlan0mon --scan --ai --report reports/auditoria_final.md
+    sudo gengarlix -i wlan0mon --scan --ai --report reports/auditoria_final.md
 
 ---
 
