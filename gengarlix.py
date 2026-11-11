@@ -12,7 +12,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 PURPLE, BOLD = "\033[35m", "\033[1m"
 CYAN, RED, GREEN, YELLOW, RESET = "\033[36m", "\033[31m", "\033[32m", "\033[33m", "\033[0m"
 
-# ─── Banner (Gengar con exactamente 2 líneas de margen superior) ───
+# ─── Banner (Gengar) ───
 gengar = [
     "",  # Margen superior 1
     "",  # Margen superior 2
@@ -54,7 +54,7 @@ gengar = [
 derecha = [
     "", "", "", "", "", "", "", "", "", "", "", # 11 líneas de margen
 
-    # GENGAR
+    # TÍTULO GENGAR
     r"    ██████╗ ███████╗███╗   ██╗ ██████╗  █████╗ ██████╗",
     r"    ██╔════╝ ██╔════╝████╗  ██║██╔════╝ ██╔══██╗██╔══██╗",
     r"    ██║  ███╗█████╗  ██╔██╗ ██║██║  ███╗███████║██████╔╝",
@@ -62,7 +62,7 @@ derecha = [
     r"    ╚██████╔╝███████╗██║ ╚████║╚██████╔╝██║  ██║██║  ██║",
     r"     ╚═════╝ ╚══════╝╚═╝  ╚═══╝ ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝",
 
-    # LIX
+    # TÍTULO LIX
     r"    ██╗     ██╗██╗  ██╗",
     r"    ██║     ██║╚██╗██╔╝",
     r"    ██║     ██║ ╚███╔╝",
@@ -88,10 +88,14 @@ def imprimir_banner():
     except OSError:
         ancho_terminal = 80
 
+    # Calculamos el ancho de ambas columnas
     max_gengar_len = max(len(line) for line in gengar)
     max_derecha_len = max(len(line) for line in derecha)
+    
+    # Necesitamos que quepan ambos + 5 espacios de separación
     ancho_necesario = max_gengar_len + max_derecha_len + 5
 
+    # Si la ventana es suficientemente ancha (o la maximizas), se ponen lado a lado
     if ancho_terminal >= ancho_necesario:
         for i in range(max(len(gengar), len(derecha))):
             raw = gengar[i] if i < len(gengar) else ""
@@ -100,12 +104,45 @@ def imprimir_banner():
             line_d = f"{PURPLE}{BOLD}{derecha[i]}{RESET}" if i < len(derecha) and derecha[i] else ""
             print(f"{line_g}{line_d}")
     else:
+        # Si la ventana es angosta, avisamos y lo ponemos vertical
+        print(f"{YELLOW}[!] Maximiza tu terminal para ver el título a la derecha.{RESET}\n")
         for linea in gengar:
             print(f"{PURPLE}{BOLD}{linea}{RESET}" if linea.strip() else "")
         print("\n")
         for linea in derecha:
             print(f"{PURPLE}{BOLD}{linea}{RESET}" if linea.strip() else "")
     print()
+
+def imprimir_menu():
+    menu = f"""
+{CYAN}{BOLD}Uso:{RESET} sudo gengarlix [opciones]
+
+{PURPLE}{BOLD}⚡ Opciones Principales:{RESET}
+  {YELLOW}-h, --help{RESET}            Muestra este menú de ayuda
+  {YELLOW}-i, --interface{RESET}       Interfaz de red (ej. wlan0, wlan0mon)
+  {YELLOW}--monitor IFACE{RESET}       Activa el modo monitor en la interfaz
+  {YELLOW}--no-banner{RESET}           Oculta el arte ASCII de Gengar
+
+{PURPLE}{BOLD}📡 Escaneo y Reconocimiento:{RESET}
+  {YELLOW}--scan{RESET}                Escanea redes Wi-Fi cercanas
+  {YELLOW}--bssid MAC{RESET}           Especifica el BSSID objetivo
+  {YELLOW}--clients{RESET}             Escanea clientes conectados al BSSID
+
+{PURPLE}{BOLD}💥 Ataques Activos:{RESET}
+  {YELLOW}--deauth{RESET}              Envía tramas deauth (requiere --bssid)
+  {YELLOW}--capture{RESET}             Captura handshake WPA (requiere --bssid)
+  {YELLOW}--pmkid{RESET}               Captura PMKID (clientless)
+
+{PURPLE}{BOLD}🔓 Cracking y Análisis:{RESET}
+  {YELLOW}--crack PCAP{RESET}          Crackea un handshake con aircrack-ng
+  {YELLOW}--pmkid-crack PCAP{RESET}    Crackea PMKID con hashcat
+  {YELLOW}--wordlist RUTA{RESET}       Diccionario para cracking
+  {YELLOW}--ai{RESET}                  Análisis de seguridad con IA local (Ollama)
+
+{PURPLE}{BOLD}📁 Reportes:{RESET}
+  {YELLOW}--report RUTA{RESET}         Ruta de salida del reporte Markdown
+"""
+    print(menu)
 
 def generar_reporte(path, redes, pcap, password, ai_text=None):
     os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
@@ -124,10 +161,8 @@ def generar_reporte(path, redes, pcap, password, ai_text=None):
     print(f"{GREEN}[✓] Reporte: {path}{RESET}")
 
 def main():
-    # Desactivamos el help por defecto de Python
     p = argparse.ArgumentParser(prog="gengarlix", description="Gengarlix — Suite ofensiva de auditoría Wi-Fi.", add_help=False)
     
-    # Agregamos nuestro propio help y los argumentos
     p.add_argument("-h", "--help", action="store_true", help="Mostrar este menú de ayuda")
     p.add_argument("-i", "--interface", help="Interfaz (wlan0, wlan0mon...)")
     p.add_argument("--monitor", metavar="IFACE", help="Activar modo monitor en IFACE")
@@ -147,11 +182,11 @@ def main():
 
     args = p.parse_args()
 
-    # Mostrar menú si se pide ayuda o no hay argumentos
+    # Mostrar banner y menú personalizado
     if args.help or len(sys.argv) == 1:
         if not args.no_banner: 
             imprimir_banner()
-        p.print_help()
+        imprimir_menu() # <--- Aquí usamos nuestro menú de colores
         return
 
     if not args.no_banner: 
