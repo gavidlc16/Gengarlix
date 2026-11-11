@@ -90,8 +90,6 @@ def imprimir_banner():
 
     max_gengar_len = max(len(line) for line in gengar)
     max_derecha_len = max(len(line) for line in derecha)
-    
-    # Ajustamos el margen de separación a 8 espacios para que no se toquen
     ancho_necesario = max_gengar_len + max_derecha_len + 8
 
     if ancho_terminal >= ancho_necesario:
@@ -178,15 +176,15 @@ def main():
 
     args = p.parse_args()
 
+    # BANNER SOLO SI: se pide ayuda o no hay argumentos
     if args.help or len(sys.argv) == 1:
         if not args.no_banner: 
             imprimir_banner()
         imprimir_menu()
         return
 
-    if not args.no_banner: 
-        imprimir_banner()
-
+    # Si ejecuta una herramienta (--scan, --monitor, etc.), va directo a la acción (sin banner)
+    
     if args.monitor:
         from modules.monitor import enable_monitor
         mon = enable_monitor(args.monitor)
