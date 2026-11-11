@@ -12,10 +12,9 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 PURPLE, BOLD = "\033[35m", "\033[1m"
 CYAN, RED, GREEN, YELLOW, RESET = "\033[36m", "\033[31m", "\033[32m", "\033[33m", "\033[0m"
 
-# ─── Banner (Gengar con 2 líneas de margen superior) ───
 gengar = [
-    "",  # Margen superior 1
-    "",  # Margen superior 2
+    "",
+    "",
     "               =#*#+:",  
     "               =*=+==*=.",
     "               =*=%@%+-*#-,",
@@ -52,24 +51,19 @@ gengar = [
 ]
 
 derecha = [
-    "", "", "", "", "", "", "", "", "", "", "", # 11 líneas de margen
-
-    # Título GENGAR (Con espacios extra para que no choque)
+    "", "", "", "", "", "", "", "", "", "", "",
     r"        ██████╗ ███████╗███╗   ██╗ ██████╗  █████╗ ██████╗",
     r"        ██╔════╝ ██╔════╝████╗  ██║██╔════╝ ██╔══██╗██╔══██╗",
     r"        ██║  ███╗█████╗  ██╔██╗ ██║██║  ███╗███████║██████╔╝",
     r"        ██║   ██║██╔══╝  ██║╚██╗██║██║   ██║██╔══██║██╔══██╗",
     r"        ╚██████╔╝███████╗██║ ╚████║╚██████╔╝██║  ██║██║  ██║",
     r"         ╚═════╝ ╚══════╝╚═╝  ╚═══╝ ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝",
-
-    # Título LIX
     r"        ██╗     ██╗██╗  ██╗",
     r"        ██║     ██║╚██╗██╔╝",
     r"        ██║     ██║ ╚███╔╝",
     r"        ██║     ██║ ██╔██╗",
     r"        ███████╗██║██╔╝ ██╗",
     r"        ╚══════╝╚═╝╚═╝  ╚═╝",
-
     "",
     f"        {BOLD}Gengarlix v1.0{RESET}",
     f"        {CYAN}Wireless Audit Suite{RESET}",
@@ -87,15 +81,10 @@ def imprimir_banner():
         ancho_terminal = os.get_terminal_size().columns
     except OSError:
         ancho_terminal = 80
-
     max_gengar_len = max(len(line) for line in gengar)
     max_derecha_len = max(len(line) for line in derecha)
-    
-    # Calcula el ancho necesario (Suma de ambos + 8 espacios de separación)
     ancho_necesario = max_gengar_len + max_derecha_len + 8
-
     if ancho_terminal >= ancho_necesario:
-        # MODO LADO A LADO
         for i in range(max(len(gengar), len(derecha))):
             raw = gengar[i] if i < len(gengar) else ""
             pad = " " * max(0, max_gengar_len - len(raw) + 8)
@@ -103,7 +92,6 @@ def imprimir_banner():
             line_d = f"{PURPLE}{BOLD}{derecha[i]}{RESET}" if i < len(derecha) and derecha[i] else ""
             print(f"{line_g}{line_d}")
     else:
-        # MODO VERTICAL (Si la terminal es muy angosta)
         for linea in gengar:
             print(f"{PURPLE}{BOLD}{linea}{RESET}" if linea.strip() else "")
         print("\n")
@@ -128,6 +116,7 @@ def imprimir_menu():
 
 {PURPLE}{BOLD}💥 Ataques Activos:{RESET}
   {YELLOW}--deauth{RESET}              Envía tramas deauth (requiere --bssid)
+  {YELLOW}--client MAC{RESET}          MAC del cliente a atacar (opcional)
   {YELLOW}--capture{RESET}             Captura handshake WPA (requiere --bssid)
   {YELLOW}--pmkid{RESET}               Captura PMKID (clientless)
 
@@ -170,6 +159,7 @@ def main():
     p.add_argument("--capture", action="store_true", help="Capturar handshake (usa --bssid)")
     p.add_argument("--pmkid", action="store_true", help="Capturar PMKID (clientless)")
     p.add_argument("--deauth", action="store_true", help="Enviar deauth (forzar reconexión)")
+    p.add_argument("--client", default="ff:ff:ff:ff:ff:ff", help="MAC del cliente a atacar")
     p.add_argument("--crack", metavar="PCAP", help="Crackear handshake")
     p.add_argument("--pmkid-crack", metavar="PCAP", help="Crackear PMKID con hashcat")
     p.add_argument("--wordlist", default="wordlists/common_passwords.txt")
@@ -180,15 +170,12 @@ def main():
 
     args = p.parse_args()
 
-    # BANNER SOLO SI: se pide ayuda o no hay argumentos
     if args.help or len(sys.argv) == 1:
         if not args.no_banner: 
             imprimir_banner()
         imprimir_menu()
         return
 
-    # Si ejecuta una herramienta va directo a la acción sin banner
-    
     if args.monitor:
         from modules.monitor import enable_monitor
         mon = enable_monitor(args.monitor)
@@ -215,7 +202,7 @@ def main():
     if args.deauth:
         if not (args.interface and args.bssid): print(f"{RED}[!] --deauth requiere -i y --bssid{RESET}"); sys.exit(1)
         from modules.deauth import send_deauth
-        send_deauth(args.interface, args.bssid, count=20)
+        send_deauth(args.interface, args.bssid, client=args.client)
 
     if args.capture:
         if not (args.interface and args.bssid): print(f"{RED}[!] --capture requiere -i y --bssid{RESET}"); sys.exit(1)
