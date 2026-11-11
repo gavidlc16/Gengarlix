@@ -96,7 +96,7 @@ def imprimir_banner():
     ancho_necesario = max_gengar_len + max_derecha_len + 5
 
     # Si la ventana es suficientemente ancha (o la maximizas), se ponen lado a lado
-    if ancho_terminal >= ancho_necesario:
+    if ancho_terminal >= 80:
         for i in range(max(len(gengar), len(derecha))):
             raw = gengar[i] if i < len(gengar) else ""
             pad = " " * max(0, max_gengar_len - len(raw) + 5)
