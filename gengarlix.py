@@ -54,7 +54,7 @@ gengar = [
 derecha = [
     "", "", "", "", "", "", "", "", "", "", "", # 11 líneas de margen
 
-    # Título GENGAR
+    # Título GENGAR (Con espacios extra para que no choque)
     r"        ██████╗ ███████╗███╗   ██╗ ██████╗  █████╗ ██████╗",
     r"        ██╔════╝ ██╔════╝████╗  ██║██╔════╝ ██╔══██╗██╔══██╗",
     r"        ██║  ███╗█████╗  ██╔██╗ ██║██║  ███╗███████║██████╔╝",
@@ -90,9 +90,12 @@ def imprimir_banner():
 
     max_gengar_len = max(len(line) for line in gengar)
     max_derecha_len = max(len(line) for line in derecha)
+    
+    # Calcula el ancho necesario (Suma de ambos + 8 espacios de separación)
     ancho_necesario = max_gengar_len + max_derecha_len + 8
 
     if ancho_terminal >= ancho_necesario:
+        # MODO LADO A LADO
         for i in range(max(len(gengar), len(derecha))):
             raw = gengar[i] if i < len(gengar) else ""
             pad = " " * max(0, max_gengar_len - len(raw) + 8)
@@ -100,6 +103,7 @@ def imprimir_banner():
             line_d = f"{PURPLE}{BOLD}{derecha[i]}{RESET}" if i < len(derecha) and derecha[i] else ""
             print(f"{line_g}{line_d}")
     else:
+        # MODO VERTICAL (Si la terminal es muy angosta)
         for linea in gengar:
             print(f"{PURPLE}{BOLD}{linea}{RESET}" if linea.strip() else "")
         print("\n")
@@ -183,7 +187,7 @@ def main():
         imprimir_menu()
         return
 
-    # Si ejecuta una herramienta (--scan, --monitor, etc.), va directo a la acción (sin banner)
+    # Si ejecuta una herramienta va directo a la acción sin banner
     
     if args.monitor:
         from modules.monitor import enable_monitor
