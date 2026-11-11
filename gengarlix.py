@@ -12,7 +12,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 PURPLE, BOLD = "\033[35m", "\033[1m"
 CYAN, RED, GREEN, YELLOW, RESET = "\033[36m", "\033[31m", "\033[32m", "\033[33m", "\033[0m"
 
-# ─── Banner (Gengar) ───
+# ─── Banner (Gengar con 2 líneas de margen superior) ───
 gengar = [
     "",  # Margen superior 1
     "",  # Margen superior 2
@@ -54,32 +54,32 @@ gengar = [
 derecha = [
     "", "", "", "", "", "", "", "", "", "", "", # 11 líneas de margen
 
-    # TÍTULO GENGAR
-    r"    ██████╗ ███████╗███╗   ██╗ ██████╗  █████╗ ██████╗",
-    r"    ██╔════╝ ██╔════╝████╗  ██║██╔════╝ ██╔══██╗██╔══██╗",
-    r"    ██║  ███╗█████╗  ██╔██╗ ██║██║  ███╗███████║██████╔╝",
-    r"    ██║   ██║██╔══╝  ██║╚██╗██║██║   ██║██╔══██║██╔══██╗",
-    r"    ╚██████╔╝███████╗██║ ╚████║╚██████╔╝██║  ██║██║  ██║",
-    r"     ╚═════╝ ╚══════╝╚═╝  ╚═══╝ ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝",
+    # Título GENGAR
+    r"        ██████╗ ███████╗███╗   ██╗ ██████╗  █████╗ ██████╗",
+    r"        ██╔════╝ ██╔════╝████╗  ██║██╔════╝ ██╔══██╗██╔══██╗",
+    r"        ██║  ███╗█████╗  ██╔██╗ ██║██║  ███╗███████║██████╔╝",
+    r"        ██║   ██║██╔══╝  ██║╚██╗██║██║   ██║██╔══██║██╔══██╗",
+    r"        ╚██████╔╝███████╗██║ ╚████║╚██████╔╝██║  ██║██║  ██║",
+    r"         ╚═════╝ ╚══════╝╚═╝  ╚═══╝ ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝",
 
-    # TÍTULO LIX
-    r"    ██╗     ██╗██╗  ██╗",
-    r"    ██║     ██║╚██╗██╔╝",
-    r"    ██║     ██║ ╚███╔╝",
-    r"    ██║     ██║ ██╔██╗",
-    r"    ███████╗██║██╔╝ ██╗",
-    r"    ╚══════╝╚═╝╚═╝  ╚═╝",
+    # Título LIX
+    r"        ██╗     ██╗██╗  ██╗",
+    r"        ██║     ██║╚██╗██╔╝",
+    r"        ██║     ██║ ╚███╔╝",
+    r"        ██║     ██║ ██╔██╗",
+    r"        ███████╗██║██╔╝ ██╗",
+    r"        ╚══════╝╚═╝╚═╝  ╚═╝",
 
     "",
-    f"    {BOLD}Gengarlix v1.0{RESET}",
-    f"    {CYAN}Wireless Audit Suite{RESET}",
+    f"        {BOLD}Gengarlix v1.0{RESET}",
+    f"        {CYAN}Wireless Audit Suite{RESET}",
     "",
-    f"    {YELLOW}•{RESET} Escaneo 802.11, Handshake y PMKID",
-    f"    {YELLOW}•{RESET} Deauth activo y pasivo",
-    f"    {YELLOW}•{RESET} Análisis con IA local (Ollama)",
-    f"    {YELLOW}•{RESET} Reportes en Markdown",
+    f"        {YELLOW}•{RESET} Escaneo 802.11, Handshake y PMKID",
+    f"        {YELLOW}•{RESET} Deauth activo y pasivo",
+    f"        {YELLOW}•{RESET} Análisis con IA local (Ollama)",
+    f"        {YELLOW}•{RESET} Reportes en Markdown",
     "",
-    f"  {PURPLE}{BOLD}gengarlix >{RESET} ",
+    f"      {PURPLE}{BOLD}gengarlix >{RESET} ",
 ]
 
 def imprimir_banner():
@@ -88,24 +88,20 @@ def imprimir_banner():
     except OSError:
         ancho_terminal = 80
 
-    # Calculamos el ancho de ambas columnas
     max_gengar_len = max(len(line) for line in gengar)
     max_derecha_len = max(len(line) for line in derecha)
     
-    # Necesitamos que quepan ambos + 5 espacios de separación
-    ancho_necesario = max_gengar_len + max_derecha_len + 5
+    # Ajustamos el margen de separación a 8 espacios para que no se toquen
+    ancho_necesario = max_gengar_len + max_derecha_len + 8
 
-    # Si la ventana es suficientemente ancha (o la maximizas), se ponen lado a lado
-    if ancho_terminal >= 80:
+    if ancho_terminal >= ancho_necesario:
         for i in range(max(len(gengar), len(derecha))):
             raw = gengar[i] if i < len(gengar) else ""
-            pad = " " * max(0, max_gengar_len - len(raw) + 5)
+            pad = " " * max(0, max_gengar_len - len(raw) + 8)
             line_g = f"{PURPLE}{BOLD}{raw}{RESET}{pad}" if raw.strip() else pad
             line_d = f"{PURPLE}{BOLD}{derecha[i]}{RESET}" if i < len(derecha) and derecha[i] else ""
             print(f"{line_g}{line_d}")
     else:
-        # Si la ventana es angosta, avisamos y lo ponemos vertical
-        print(f"{YELLOW}[!] Maximiza tu terminal para ver el título a la derecha.{RESET}\n")
         for linea in gengar:
             print(f"{PURPLE}{BOLD}{linea}{RESET}" if linea.strip() else "")
         print("\n")
@@ -182,11 +178,10 @@ def main():
 
     args = p.parse_args()
 
-    # Mostrar banner y menú personalizado
     if args.help or len(sys.argv) == 1:
         if not args.no_banner: 
             imprimir_banner()
-        imprimir_menu() # <--- Aquí usamos nuestro menú de colores
+        imprimir_menu()
         return
 
     if not args.no_banner: 
