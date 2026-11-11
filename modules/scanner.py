@@ -1,7 +1,12 @@
-def scan_networks():
-    print("[*] Simulando escaneo (modo demo)...")
-    return [
-        {"ssid": "Mi_WiFi_Casa", "bssid": "00:11:22:33:44:55", "signal": -45, "security": "WPA2"},
-        {"ssid": "Vecino_5G", "bssid": "AA:BB:CC:DD:EE:FF", "signal": -70, "security": "WPA3"},
-        {"ssid": "Cafeteria_Gratis", "bssid": "11:22:33:44:55:66", "signal": -80, "security": "Abierta"}
-    ]
+from scapy.all import sniff, Dot11, Dot11Beacon, Dot11Elt
+
+def scan_networks(interface, timeout=30):
+    redes = {}
+    def _pkt(pkt):
+        if pkt.haslayer(Dot11Beacon):
+            bssid = pkt[Dot11].addr3
+            ssid = pkt[Dot11Elt].info.decode(errors="ignore")
+            canal = int(ord(pkt[Dot11Elt:3].info))
+            redes[bssid] = {"ssid": ssid, "bssid": bssid, "canal": canal}
+    sniff(iface=interface, prn=_pkt, timeout=timeout, store=0)
+    return list(redes.values())
