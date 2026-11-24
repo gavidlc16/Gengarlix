@@ -6,6 +6,7 @@
     <img src="https://img.shields.io/badge/python-3.10%2B-blue">
     <img src="https://img.shields.io/badge/license-MIT-green">
     <img src="https://img.shields.io/badge/status-beta-yellow">
+    <img src="https://img.shields.io/badge/version-v1.1.0-orange">
     <img src="https://img.shields.io/badge/OS-Kali%20Linux-557C94">
   </p>
 </div>
@@ -17,13 +18,13 @@
 
 ## 🚀 Características
 - **Modo Monitor:** Gestión de interfaces con `airmon-ng` e `iw`.
-- **Escaneo:** Detección de redes y clientes (Scapy).
+- **Escaneo Inteligente:** Detección de redes y clientes con *channel hopping* (salto de canales) automático para no perder objetivos en 2.4GHz o 5GHz.
 - **Ataques de Handshake:** Captura WPA/WPA2 forzando reconexión (Deauth).
 - **Ataque PMKID:** Captura *clientless* sin esperar a que un cliente se conecte.
-- **Cracking:** Integración con `aircrack-ng` y `hashcat`.
+- **Cracking Avanzado:** Integración total con `aircrack-ng` y `hashcat` (soporta reglas, combinatoria e híbridos).
 - **Análisis IA:** Consultas a Ollama local para resumir auditorías.
 - **Reportes:** Generación automática de reportes en Markdown.
-- **Wordlists:** Incluye un diccionario base y un script generador de contraseñas (mangling).
+- **Wordlists Dinámicas:** Incluye diccionario base y un motor integrado de expansión (mangling) con 3 niveles de profundidad.
 
 ---
 
@@ -89,7 +90,7 @@ Para iniciar un pentest, primero debes poner tu tarjeta en modo monitor. Esto ma
 *(Nota: Reemplaza `wlan0` por el nombre real de tu interfaz. Para volver a la normalidad, puedes usar `sudo airmon-ng stop wlan0mon`).*
 
 ### 2. Escaneo de Redes y Clientes
-Escanea el espectro para encontrar objetivos (redes Wi-Fi y dispositivos conectados).
+Escanea el espectro para encontrar objetivos. El escáner cuenta con *channel hopping* automático, por lo que capturará redes en 2.4GHz y 5GHz sin que tengas que fijar el canal.
 
     # Escanear redes disponibles (BSSID, SSID, Canal, Señal)
     sudo gengarlix -i wlan0mon --scan --timeout 30
@@ -107,16 +108,26 @@ Fuerza la desconexión de los clientes para interceptar el saludo de autenticaci
     sudo gengarlix -i wlan0mon --bssid AA:BB:CC:DD:EE:FF --capture --timeout 120
 
     # Ataque PMKID (No necesita clientes conectados, es "Clientless")
-    sudo gengarlix -i wlan0mon --bssid AA:BB:CC:DD:EE:FF --pmkid --timeout 60
+    # IMPORTANTE: --channel es obligatorio para fijar la tarjeta en el canal del objetivo
+    sudo gengarlix -i wlan0mon --bssid AA:BB:CC:DD:EE:FF --pmkid --channel 6 --timeout 60
 
 ### 4. Crackeo de Contraseñas
 Una vez capturado el archivo `.pcap`, usa el ataque de diccionario con tu propia lista de contraseñas.
 
     # Crackear un Handshake capturado (usando aircrack-ng)
-    sudo gengarlix --crack reports/handshake_AABBCCDDEEFF.pcap --wordlist wordlists/gengar_passwords_mangled.txt
+    sudo gengarlix --crack reports/handshake_AABBCCDDEEFF.pcap --wordlist wordlists/gengar_passwords.txt
 
     # Crackear un PMKID capturado (usando hashcat)
-    sudo gengarlix --pmkid-crack reports/pmkid_AABBCCDDEEFF.pcap --wordlist wordlists/gengar_passwords_mangled.txt
+    sudo gengarlix --pmkid-crack reports/pmkid_AABBCCDDEEFF.pcap --wordlist wordlists/gengar_passwords.txt
+
+    # Crackear con Reglas de hashcat (ej. best64.rule para mutaciones)
+    sudo gengarlix --pmkid-crack reports/pmkid_AABBCCDDEEFF.pcap --wordlist wordlists/gengar_passwords.txt --rules /usr/share/hashcat/rules/best64.rule
+
+    # Crackear usando Combinator (Unir diccionario base + sufijos)
+    sudo gengarlix --pmkid-crack reports/pmkid_AABBCCDDEEFF.pcap --wordlist wordlists/gengar_passwords.txt --combinator wordlists/sufijos.txt
+
+    # Ataque Híbrido (Añadir 4 números al final de cada palabra, ej: MiClave1234)
+    sudo gengarlix --pmkid-crack reports/pmkid_AABBCCDDEEFF.pcap --wordlist wordlists/gengar_passwords.txt --hybrid "?d?d?d?d"
 
 ### 5. Análisis con IA y Reportes
 Genera un reporte final en Markdown con los hallazgos. Asegúrate de tener Ollama corriendo (`ollama serve`).
@@ -127,12 +138,19 @@ Genera un reporte final en Markdown con los hallazgos. Asegúrate de tener Ollam
 ---
 
 ## 🔤 Generación de Diccionarios (Wordlists)
-El repositorio incluye un script llamado `mangler.py` que toma una lista de palabras base y la expande automáticamente con números, símbolos y mayúsculas (ej. `gengar` -> `Gengar2024!`).
+El repositorio incluye un motor de expansión (mangling) que toma una lista de palabras base y la muta automáticamente añadiendo números, símbolos, años y leetspeak (ej. `gengar` -> `Gengar2024!`). 
 
-    # Para generar tu propio diccionario masivo:
+Tienes dos formas de usarlo:
+
+**Opción 1: Desde la terminal (Script independiente)**
     python3 mangler.py
+*(El resultado se guardará por defecto en `wordlists/gengar_passwords_mangled.txt`)*
 
-*(El resultado se guardará en `wordlists/gengar_passwords_mangled.txt`)*
+**Opción 2: Integrado en Gengarlix (Expandir y crackear en un solo paso)**
+Puedes decirle a Gengarlix que expanda el diccionario en memoria y lo use inmediatamente para atacar, eligiendo el nivel de profundidad (`low`, `medium`, `high`):
+
+    # Expande el diccionario a nivel "high" y luego crackea el PMKID automáticamente
+    sudo gengarlix --mangle --mangle-config high --wordlist wordlists/gengar_passwords.txt --pmkid-crack reports/pmkid.pcap
 
 ---
 
